@@ -85,9 +85,24 @@ const App = {
     const tab = allTabs.find(t => t.id === tabId);
     if (!tab) { this.isLoading = false; this.setFetchBtnLoading(false); return; }
 
-    const rssUrls = Sources.getTabRssUrls(tab);
-    if (!rssUrls || rssUrls.length === 0) {
-      this.showError('RSSのURLが設定されていません。');
+    // RSSソース管理で登録されているURLを取得
+    const managedSources = Sources.getRssSources();
+    const enabledSourceUrls = managedSources.filter(s => s.enabled).map(s => s.url);
+    const hasManagedSources = managedSources.length > 0;
+
+    // RSSソース管理にソースが登録されている場合はそれを使用
+    // 登録がない場合はタブ固有のURLを使用（フォールバック）
+    let allUrls;
+    if (hasManagedSources) {
+      // 管理ソースを使う（チェックOFFはここで反映される）
+      allUrls = [...new Set(enabledSourceUrls)];
+    } else {
+      // 管理ソースが一件もない場合のみタブ固有URLを使う
+      allUrls = Sources.getTabRssUrls(tab);
+    }
+
+    if (!allUrls || allUrls.length === 0) {
+      this.showError('有効なRSSソースがありません。設定でRSSソースのチェックを入れてください。');
       this.isLoading = false;
       this.setFetchBtnLoading(false);
       return;
@@ -98,7 +113,7 @@ const App = {
     const keyword = tab.keyword || '';
 
     const results = await Promise.allSettled(
-      rssUrls.map(url => this.fetchSingleRss(url))
+      allUrls.map(url => this.fetchSingleRss(url))
     );
 
     results.forEach(r => {
