@@ -143,9 +143,12 @@ const App = {
       Storage.setCache(tabId, sliced);
       this.renderArticles(sliced, tabId);
       const ts = new Date().toLocaleString('ja-JP');
-      this.setStatus(`取得: ${ts}　${sliced.length}件`);
+      const urlInfo = allUrls.map(u => {
+        try { return new URL(u).hostname; } catch(e) { return u; }
+      }).join(', ');
+      this.setStatus(`取得: ${ts}　${sliced.length}件　ソース: ${urlInfo}`);
     } else {
-      this.showError('記事を取得できませんでした。ネットワーク接続を確認してください。');
+      this.showError(`記事を取得できませんでした。URL: ${allUrls.join(', ')}`);
     }
 
     this.isLoading = false;
@@ -498,7 +501,14 @@ const App = {
     const name = document.getElementById('new-tab-name').value.trim();
     const keyword = document.getElementById('new-tab-keyword').value.trim();
     const rssUrl = document.getElementById('new-tab-rssurl').value.trim();
-    if (!name) return;
+    if (!name) {
+      alert('タブ名を入力してください。');
+      return;
+    }
+    if (!rssUrl) {
+      alert('RSS URLを入力してください。');
+      return;
+    }
 
     const icons = ['📌','🔍','💡','🌐','📡','🧩','⭐','🔥','🎯','💎'];
     const icon = icons[Math.floor(Math.random() * icons.length)];
@@ -509,7 +519,7 @@ const App = {
       label: `${icon} ${name}`,
       icon,
       type: 'rss',
-      rssUrls: rssUrl ? [rssUrl] : ['https://feeds.bbci.co.uk/news/rss.xml'],
+      rssUrls: [rssUrl],  // 必ず配列で保存
       keyword,
       color,
     };
@@ -663,6 +673,17 @@ const App = {
     document.getElementById('btn-save-tab').addEventListener('click', () => this.saveNewTab());
     document.getElementById('btn-cancel-tab').addEventListener('click', () => this.hideAddTabModal());
     document.getElementById('btn-close-settings').addEventListener('click', () => this.hideSettingsModal());
+    document.getElementById('btn-reset-defaults').addEventListener('click', () => {
+      if (confirm('カスタムタブ・RSSソース設定・キャッシュを全て初期化します。よろしいですか？')) {
+        // キャッシュも全消去
+        Object.keys(localStorage).filter(k => k.startsWith('freyNewsHunter_')).forEach(k => localStorage.removeItem(k));
+        Sources.resetToDefaults();
+        this.renderTabs();
+        this.hideSettingsModal();
+        this.selectTab(this.config.fixedTabs[0].id);
+        alert('初期化しました。');
+      }
+    });
     document.getElementById('btn-close-bg').addEventListener('click', () => this.hideBgModal());
     document.getElementById('btn-add-rss').addEventListener('click', () => this.addRssSource());
 

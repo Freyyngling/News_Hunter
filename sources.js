@@ -7,17 +7,36 @@ const Sources = {
 
   async init(config) {
     this.config = config;
-    this.customTabs = Storage.getCustomTabs() || JSON.parse(JSON.stringify(config.defaultCustomTabs));
-    this.rssSources = Storage.getRssSources() || JSON.parse(JSON.stringify(config.defaultRssSources));
+    // LocalStorageのカスタムタブを読む。なければconfig.jsonのデフォルトを使う
+    const saved = Storage.getCustomTabs();
+    this.customTabs = saved ? saved : JSON.parse(JSON.stringify(config.defaultCustomTabs));
+    // RSSソース一覧
+    const savedSrc = Storage.getRssSources();
+    this.rssSources = savedSrc ? savedSrc : JSON.parse(JSON.stringify(config.defaultRssSources));
   },
 
   getFixedTabs() { return this.config.fixedTabs; },
   getCustomTabs() { return this.customTabs; },
   getAllTabs() { return [...this.getFixedTabs(), ...this.customTabs]; },
 
+  // タブのRSS URLリストを正規化して返す
+  getTabRssUrls(tab) {
+    // rssUrls配列が優先
+    if (Array.isArray(tab.rssUrls) && tab.rssUrls.length > 0) return tab.rssUrls;
+    // 単数形rssUrlにも対応
+    if (tab.rssUrl) return [tab.rssUrl];
+    return [];
+  },
+
   addCustomTab(tab) {
     const id = 'custom_' + Date.now();
-    this.customTabs.push({ ...tab, id, enabled: true });
+    // rssUrlsを必ず配列で正規化して保存
+    const rssUrls = tab.rssUrls
+      ? tab.rssUrls
+      : (tab.rssUrl ? [tab.rssUrl] : []);
+    const newTab = { ...tab, id, rssUrls, enabled: true };
+    delete newTab.rssUrl; // 単数形は削除して統一
+    this.customTabs.push(newTab);
     Storage.setCustomTabs(this.customTabs);
     return id;
   },
@@ -25,14 +44,6 @@ const Sources = {
   removeCustomTab(id) {
     this.customTabs = this.customTabs.filter(t => t.id !== id);
     Storage.setCustomTabs(this.customTabs);
-  },
-
-  updateCustomTab(id, data) {
-    const idx = this.customTabs.findIndex(t => t.id === id);
-    if (idx !== -1) {
-      this.customTabs[idx] = { ...this.customTabs[idx], ...data };
-      Storage.setCustomTabs(this.customTabs);
-    }
   },
 
   getRssSources() { return this.rssSources; },
@@ -57,10 +68,11 @@ const Sources = {
     }
   },
 
-  // タブのRSS URLリストを取得（複数対応）
-  getTabRssUrls(tab) {
-    if (tab.rssUrls && tab.rssUrls.length > 0) return tab.rssUrls;
-    if (tab.rssUrl) return [tab.rssUrl];
-    return [];
+  // LocalStorageを完全リセットしてconfigのデフォルトに戻す
+  resetToDefaults() {
+    Storage.remove('customTabs');
+    Storage.remove('rssSources');
+    this.customTabs = JSON.parse(JSON.stringify(this.config.defaultCustomTabs));
+    this.rssSources = JSON.parse(JSON.stringify(this.config.defaultRssSources));
   },
 };
