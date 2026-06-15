@@ -7,9 +7,7 @@ const Sources = {
 
   async init(config) {
     this.config = config;
-    // カスタムタブ
     this.customTabs = Storage.getCustomTabs() || JSON.parse(JSON.stringify(config.defaultCustomTabs));
-    // RSSソース
     this.rssSources = Storage.getRssSources() || JSON.parse(JSON.stringify(config.defaultRssSources));
   },
 
@@ -59,17 +57,10 @@ const Sources = {
     }
   },
 
-  // Google News キーワードRSS URL生成
-  buildKeywordRssUrl(keyword) {
-    const q = encodeURIComponent(keyword);
-    return `https://news.google.com/rss/search?q=${q}&hl=ja&gl=JP&ceid=JP:ja`;
-  },
-
-  // タブのRSS URLを取得
-  getTabRssUrl(tab) {
-    if (tab.rssUrl) return tab.rssUrl;
-    if (tab.type === 'keyword' && tab.keyword) return this.buildKeywordRssUrl(tab.keyword);
-    if (tab.type === 'rss' && tab.rssUrl) return tab.rssUrl;
-    return null;
+  // タブのRSS URLリストを取得（複数対応）
+  getTabRssUrls(tab) {
+    if (tab.rssUrls && tab.rssUrls.length > 0) return tab.rssUrls;
+    if (tab.rssUrl) return [tab.rssUrl];
+    return [];
   },
 };

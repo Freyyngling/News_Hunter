@@ -3,7 +3,7 @@
 const App = {
   config: null,
   currentTabId: null,
-  currentView: 'card', // 'card' or 'list'
+  currentView: 'card',
   fetchCount: 20,
   isLoading: false,
 
@@ -18,18 +18,15 @@ const App = {
     this.applyBackground();
     this.updateFetchCountInput();
 
-    // 最初のタブを選択
     const firstTab = this.config.fixedTabs[0];
     this.selectTab(firstTab.id);
   },
 
-  // タブ描画
   renderTabs() {
     const tabBar = document.getElementById('tab-bar');
     tabBar.innerHTML = '';
 
-    const allTabs = Sources.getAllTabs();
-    allTabs.forEach(tab => {
+    Sources.getAllTabs().forEach(tab => {
       const btn = document.createElement('button');
       btn.className = 'tab-btn';
       btn.dataset.tabId = tab.id;
@@ -39,7 +36,6 @@ const App = {
       tabBar.appendChild(btn);
     });
 
-    // ブックマークタブ
     const bmBtn = document.createElement('button');
     bmBtn.className = 'tab-btn tab-bookmark';
     bmBtn.dataset.tabId = '__bookmarks__';
@@ -48,7 +44,6 @@ const App = {
     bmBtn.addEventListener('click', () => this.selectTab('__bookmarks__'));
     tabBar.appendChild(bmBtn);
 
-    // カスタムタブ追加ボタン
     const addBtn = document.createElement('button');
     addBtn.className = 'tab-btn tab-add';
     addBtn.innerHTML = `<span class="tab-icon">＋</span><span class="tab-label">タブ追加</span>`;
@@ -67,107 +62,148 @@ const App = {
       return;
     }
 
-    // キャッシュがあればまず表示
     const cached = Storage.getCached(tabId);
     if (cached) {
       this.renderArticles(cached.data, tabId);
       const ts = new Date(cached.timestamp).toLocaleString('ja-JP');
-      this.setStatus(`前回取得: ${ts}`);
+      this.setStatus(`前回取得: ${ts}　${cached.data.length}件`);
     } else {
       this.showSkeleton();
-      this.fetchArticles(tabId);
+      this.setStatus('「今すぐ取得」ボタンを押してください');
     }
   },
 
-  // RSS取得（複数APIフォールバック）
+  // メイン取得処理
   async fetchArticles(tabId) {
     if (this.isLoading) return;
     this.isLoading = true;
     this.setFetchBtnLoading(true);
     this.showSkeleton();
+    this.setStatus('取得中...');
 
     const allTabs = Sources.getAllTabs();
     const tab = allTabs.find(t => t.id === tabId);
-    if (!tab) { this.isLoading = false; return; }
+    if (!tab) { this.isLoading = false; this.setFetchBtnLoading(false); return; }
 
-    const rssUrl = Sources.getTabRssUrl(tab);
-    if (!rssUrl) { this.isLoading = false; return; }
+    const rssUrls = Sources.getTabRssUrls(tab);
+    if (!rssUrls || rssUrls.length === 0) {
+      this.showError('RSSのURLが設定されていません。');
+      this.isLoading = false;
+      this.setFetchBtnLoading(false);
+      return;
+    }
 
-    const items = await this.fetchRssWithFallback(rssUrl);
+    // 複数URLから並行取得してマージ
+    let allItems = [];
+    const keyword = tab.keyword || '';
 
-    if (items && items.length > 0) {
-      const sliced = items.slice(0, this.fetchCount);
+    const results = await Promise.allSettled(
+      rssUrls.map(url => this.fetchSingleRss(url))
+    );
+
+    results.forEach(r => {
+      if (r.status === 'fulfilled' && r.value && r.value.length > 0) {
+        allItems = allItems.concat(r.value);
+      }
+    });
+
+    // キーワードフィルタ（カスタムタブのみ）
+    if (keyword && tab.id.startsWith('custom_')) {
+      const kw = keyword.toLowerCase();
+      const filtered = allItems.filter(item =>
+        (item.title || '').toLowerCase().includes(kw) ||
+        (item.description || '').toLowerCase().includes(kw)
+      );
+      // フィルタ結果が少なすぎる場合は全件使う
+      if (filtered.length >= 3) allItems = filtered;
+    }
+
+    // 日付順ソート
+    allItems.sort((a, b) => {
+      const da = a.pubDate ? new Date(a.pubDate) : 0;
+      const db = b.pubDate ? new Date(b.pubDate) : 0;
+      return db - da;
+    });
+
+    // 重複除去（タイトルベース）
+    const seen = new Set();
+    allItems = allItems.filter(item => {
+      const key = (item.title || '').trim().slice(0, 40);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const sliced = allItems.slice(0, this.fetchCount);
+
+    if (sliced.length > 0) {
       Storage.setCache(tabId, sliced);
       this.renderArticles(sliced, tabId);
       const ts = new Date().toLocaleString('ja-JP');
       this.setStatus(`取得: ${ts}　${sliced.length}件`);
     } else {
-      this.showError('記事の取得に失敗しました。しばらく待ってから再度お試しください。');
+      this.showError('記事を取得できませんでした。ネットワーク接続を確認してください。');
     }
 
     this.isLoading = false;
     this.setFetchBtnLoading(false);
   },
 
-  // 複数APIを順番に試すフォールバック
-  async fetchRssWithFallback(rssUrl) {
-    // 方法1: rss2json.com
-    try {
-      const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=100`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.status === 'ok' && data.items && data.items.length > 0) {
-        return this.normalizeRss2json(data.items);
-      }
-    } catch(e) {}
+  // 単一RSSを複数プロキシでフォールバック取得
+  async fetchSingleRss(rssUrl) {
+    // プロキシリスト（順番に試す）
+    const proxies = [
+      async (url) => {
+        const endpoint = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=50`;
+        const res = await fetch(endpoint, { signal: AbortSignal.timeout(8000) });
+        const data = await res.json();
+        if (data.status === 'ok' && data.items?.length > 0) {
+          return data.items.map(item => ({
+            title: item.title || '',
+            link: item.link || '',
+            pubDate: item.pubDate || '',
+            author: item.author || '',
+            thumbnail: item.thumbnail || item.enclosure?.link || '',
+            description: item.description || item.content || '',
+            source: { title: item.author || '' },
+          }));
+        }
+        return null;
+      },
+      async (url) => {
+        const endpoint = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        const res = await fetch(endpoint, { signal: AbortSignal.timeout(8000) });
+        const data = await res.json();
+        if (data.contents) return this.parseRssXml(data.contents);
+        return null;
+      },
+      async (url) => {
+        const endpoint = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        const res = await fetch(endpoint, { signal: AbortSignal.timeout(8000) });
+        const text = await res.text();
+        if (text) return this.parseRssXml(text);
+        return null;
+      },
+    ];
 
-    // 方法2: AllOrigins経由でRSS直接取得＋パース
-    try {
-      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-      const res = await fetch(proxy);
-      const data = await res.json();
-      if (data.contents) {
-        const items = this.parseRssXml(data.contents);
+    for (const proxy of proxies) {
+      try {
+        const items = await proxy(rssUrl);
         if (items && items.length > 0) return items;
+      } catch(e) {
+        // 次のプロキシを試す
       }
-    } catch(e) {}
-
-    // 方法3: corsproxy.io経由
-    try {
-      const proxy = `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`;
-      const res = await fetch(proxy);
-      const text = await res.text();
-      if (text) {
-        const items = this.parseRssXml(text);
-        if (items && items.length > 0) return items;
-      }
-    } catch(e) {}
-
-    return null;
+    }
+    return [];
   },
 
-  // rss2json形式を内部形式に正規化
-  normalizeRss2json(items) {
-    return items.map(item => ({
-      title: item.title || '',
-      link: item.link || '',
-      pubDate: item.pubDate || '',
-      author: item.author || '',
-      thumbnail: item.thumbnail || item.enclosure?.link || '',
-      description: item.description || item.content || '',
-      source: { title: item.author || '' },
-      enclosure: item.enclosure || {},
-    }));
-  },
-
-  // RSS/AtomのXMLを手動パース
+  // RSS/AtomのXMLをパース
   parseRssXml(xmlText) {
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(xmlText, 'text/xml');
       const items = [];
 
-      // RSS 2.0
       const rssItems = doc.querySelectorAll('item');
       if (rssItems.length > 0) {
         rssItems.forEach(el => {
@@ -175,11 +211,11 @@ const App = {
           const link = get('link') || el.querySelector('guid')?.textContent?.trim() || '';
           let imgUrl = '';
           const enclosure = el.querySelector('enclosure');
-          if (enclosure && enclosure.getAttribute('type')?.startsWith('image')) {
+          if (enclosure?.getAttribute('type')?.startsWith('image')) {
             imgUrl = enclosure.getAttribute('url') || '';
           }
           if (!imgUrl) {
-            const media = el.querySelector('content') || el.querySelector('thumbnail');
+            const media = el.querySelector('[url]');
             if (media) imgUrl = media.getAttribute('url') || '';
           }
           if (!imgUrl) {
@@ -193,15 +229,14 @@ const App = {
             pubDate: get('pubDate'),
             author: get('author') || get('creator') || '',
             thumbnail: imgUrl,
-            description: get('description') || get('encoded') || '',
-            source: { title: get('source') || '' },
-            enclosure: {},
+            description: get('description') || '',
+            source: { title: '' },
           });
         });
         return items;
       }
 
-      // Atom
+      // Atom対応
       const entries = doc.querySelectorAll('entry');
       entries.forEach(el => {
         const get = (tag) => el.querySelector(tag)?.textContent?.trim() || '';
@@ -215,7 +250,6 @@ const App = {
           thumbnail: '',
           description: get('summary') || get('content') || '',
           source: { title: '' },
-          enclosure: {},
         });
       });
       return items;
@@ -243,14 +277,15 @@ const App = {
       const isRead = Storage.isRead(articleId);
       const isBookmarked = Storage.isBookmarked(articleId);
 
-      // 画像取得
-      let imgUrl = item.enclosure?.link || item.thumbnail || '';
+      let imgUrl = item.thumbnail || item.enclosure?.link || '';
       if (!imgUrl && item.description) {
         const match = item.description.match(/<img[^>]+src=["']([^"']+)["']/i);
         if (match) imgUrl = match[1];
       }
 
-      const pubDate = item.pubDate ? new Date(item.pubDate).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      const pubDate = item.pubDate
+        ? new Date(item.pubDate).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : '';
       const source = item.source?.title || item.author || '';
 
       const card = document.createElement('div');
@@ -258,13 +293,21 @@ const App = {
       card.style.setProperty('--card-color', tabColor);
       card.style.animationDelay = `${idx * 0.04}s`;
 
+      const safeArticle = JSON.stringify({
+        id: articleId,
+        title: item.title,
+        link: item.link,
+        pubDate: item.pubDate,
+        source
+      }).replace(/'/g, "&#39;");
+
       card.innerHTML = `
         <div class="card-thumb">
           ${imgUrl
-            ? `<img src="${imgUrl}" alt="" loading="lazy" onerror="this.parentElement.classList.add('no-img')">`
-            : `<div class="thumb-placeholder" style="background: linear-gradient(135deg, ${tabColor}44, ${tabColor}22)"><span>${tab?.icon || '📰'}</span></div>`
+            ? `<img src="${imgUrl}" alt="" loading="lazy" onerror="this.parentElement.classList.add('no-img');this.remove();this.parentElement.innerHTML+='<div class=\\'thumb-placeholder\\" style=\\"background:linear-gradient(135deg,${tabColor}44,${tabColor}22)\\"><span>${tab?.icon || '📰'}</span></div>'">`
+            : `<div class="thumb-placeholder" style="background:linear-gradient(135deg,${tabColor}44,${tabColor}22)"><span>${tab?.icon || '📰'}</span></div>`
           }
-          ${isRead ? '' : '<span class="badge-new">NEW</span>'}
+          ${!isRead ? '<span class="badge-new">NEW</span>' : ''}
         </div>
         <div class="card-body">
           <div class="card-meta">
@@ -273,15 +316,12 @@ const App = {
           </div>
           <h3 class="card-title">${item.title || '(タイトルなし)'}</h3>
           <div class="card-actions">
-            <button class="btn-open" data-url="${item.link}" title="記事を開く">🔗 開く</button>
-            <button class="btn-bookmark ${isBookmarked ? 'bookmarked' : ''}" data-id="${articleId}" data-article='${JSON.stringify({ id: articleId, title: item.title, link: item.link, pubDate: item.pubDate, source }).replace(/'/g, "&#39;")}' title="ブックマーク">
-              ${isBookmarked ? '🔖' : '🔖'}
-            </button>
+            <button class="btn-open" data-url="${item.link}">🔗 開く</button>
+            <button class="btn-bookmark ${isBookmarked ? 'bookmarked' : ''}" data-id="${articleId}" data-article='${safeArticle}'>🔖</button>
           </div>
         </div>
       `;
 
-      // 開くボタン
       card.querySelector('.btn-open').addEventListener('click', (e) => {
         e.stopPropagation();
         Storage.markRead(articleId);
@@ -290,7 +330,6 @@ const App = {
         window.open(item.link, '_blank');
       });
 
-      // ブックマークボタン
       card.querySelector('.btn-bookmark').addEventListener('click', (e) => {
         e.stopPropagation();
         const btn = e.currentTarget;
@@ -326,7 +365,7 @@ const App = {
       card.style.animationDelay = `${idx * 0.04}s`;
       card.innerHTML = `
         <div class="card-thumb">
-          <div class="thumb-placeholder" style="background: linear-gradient(135deg, #f59e0b44, #f59e0b22)"><span>🔖</span></div>
+          <div class="thumb-placeholder" style="background:linear-gradient(135deg,#f59e0b44,#f59e0b22)"><span>🔖</span></div>
         </div>
         <div class="card-body">
           <div class="card-meta">
@@ -378,7 +417,6 @@ const App = {
     btn.textContent = loading ? '取得中...' : '🔄 今すぐ取得';
   },
 
-  // 表示切り替え
   toggleView() {
     this.currentView = this.currentView === 'card' ? 'list' : 'card';
     document.getElementById('btn-view').textContent = this.currentView === 'card' ? '☰ リスト' : '⊞ カード';
@@ -390,7 +428,6 @@ const App = {
     document.getElementById('fetch-count').value = this.fetchCount;
   },
 
-  // 背景適用
   applyBackground() {
     const setting = Storage.getBgSetting();
     const bgLayer = document.getElementById('bg-layer');
@@ -426,7 +463,6 @@ const App = {
     this.applyBackground();
   },
 
-  // モーダル：タブ追加
   showAddTabModal() {
     document.getElementById('modal-add-tab').classList.add('open');
   },
@@ -435,25 +471,36 @@ const App = {
     document.getElementById('modal-add-tab').classList.remove('open');
     document.getElementById('new-tab-name').value = '';
     document.getElementById('new-tab-keyword').value = '';
+    document.getElementById('new-tab-rssurl').value = '';
   },
 
   saveNewTab() {
     const name = document.getElementById('new-tab-name').value.trim();
     const keyword = document.getElementById('new-tab-keyword').value.trim();
-    if (!name || !keyword) return;
+    const rssUrl = document.getElementById('new-tab-rssurl').value.trim();
+    if (!name) return;
 
-    const icons = ['📌', '🔍', '💡', '🌐', '📡', '🧩', '⭐', '🔥'];
+    const icons = ['📌','🔍','💡','🌐','📡','🧩','⭐','🔥','🎯','💎'];
     const icon = icons[Math.floor(Math.random() * icons.length)];
-    const colors = ['#6366f1', '#8b5cf6', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+    const colors = ['#6366f1','#8b5cf6','#0ea5e9','#10b981','#f59e0b','#ef4444','#ec4899','#14b8a6'];
     const color = colors[Math.floor(Math.random() * colors.length)];
 
-    Sources.addCustomTab({ label: `${icon} ${name}`, icon, type: 'keyword', keyword, color });
+    const tab = {
+      label: `${icon} ${name}`,
+      icon,
+      type: 'rss',
+      rssUrls: rssUrl ? [rssUrl] : ['https://feeds.bbci.co.uk/news/rss.xml'],
+      keyword,
+      color,
+    };
+
+    Sources.addCustomTab(tab);
     this.renderTabs();
     this.hideAddTabModal();
-    this.selectTab(Sources.getCustomTabs().slice(-1)[0].id);
+    const newId = Sources.getCustomTabs().slice(-1)[0].id;
+    this.selectTab(newId);
   },
 
-  // モーダル：設定
   showSettingsModal() {
     this.renderRssSourcesList();
     this.renderCustomTabsList();
@@ -504,7 +551,7 @@ const App = {
       row.innerHTML = `
         <span class="tab-icon-sm">${tab.icon || '📌'}</span>
         <span class="source-name">${tab.label}</span>
-        <span class="source-url">${tab.keyword || tab.rssUrl || ''}</span>
+        <span class="source-url">${tab.keyword || (tab.rssUrls?.[0]) || ''}</span>
         <button class="btn-del-source" data-id="${tab.id}">🗑️</button>
       `;
       row.querySelector('.btn-del-source').addEventListener('click', () => {
@@ -516,7 +563,6 @@ const App = {
     });
   },
 
-  // 背景設定
   showBgModal() {
     document.getElementById('modal-bg').classList.add('open');
     this.renderBgThumbs();
@@ -533,14 +579,12 @@ const App = {
     const container = document.getElementById('bg-thumbs');
     container.innerHTML = '';
 
-    // なし
     const noneBtn = document.createElement('div');
     noneBtn.className = 'bg-thumb';
     noneBtn.textContent = 'なし';
     noneBtn.addEventListener('click', () => this.setBg('none', null));
     container.appendChild(noneBtn);
 
-    // 固定背景
     this.config.backgrounds.forEach(bg => {
       const div = document.createElement('div');
       div.className = 'bg-thumb';
@@ -569,23 +613,16 @@ const App = {
   },
 
   bindEvents() {
-    // 取得ボタン
     document.getElementById('btn-fetch').addEventListener('click', () => {
       if (this.currentTabId && this.currentTabId !== '__bookmarks__') {
         this.fetchArticles(this.currentTabId);
       }
     });
 
-    // 表示切り替え
     document.getElementById('btn-view').addEventListener('click', () => this.toggleView());
-
-    // 設定ボタン
     document.getElementById('btn-settings').addEventListener('click', () => this.showSettingsModal());
-
-    // 背景ボタン
     document.getElementById('btn-bg').addEventListener('click', () => this.showBgModal());
 
-    // 取得件数
     document.getElementById('fetch-count').addEventListener('change', (e) => {
       const v = parseInt(e.target.value) || 20;
       this.fetchCount = Math.max(1, Math.min(200, v));
@@ -593,7 +630,6 @@ const App = {
       Storage.saveSetting('fetchCount', this.fetchCount);
     });
 
-    // モーダル閉じる
     document.getElementById('modal-add-tab').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) this.hideAddTabModal();
     });
@@ -610,7 +646,6 @@ const App = {
     document.getElementById('btn-close-bg').addEventListener('click', () => this.hideBgModal());
     document.getElementById('btn-add-rss').addEventListener('click', () => this.addRssSource());
 
-    // 背景ズームスライダー
     document.getElementById('bg-zoom-slider').addEventListener('input', (e) => {
       const z = parseInt(e.target.value);
       document.getElementById('bg-zoom-value').textContent = z + '%';
@@ -620,7 +655,6 @@ const App = {
       this.applyBackground();
     });
 
-    // 背景アップロード
     document.getElementById('bg-upload-input').addEventListener('change', (e) => this.handleBgUpload(e));
   },
 };

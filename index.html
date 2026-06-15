@@ -59,8 +59,12 @@
       <input type="text" id="new-tab-name" placeholder="タブの名前">
     </div>
     <div class="modal-field">
-      <label>キーワード（例：AI 人工知能 機械学習）</label>
-      <input type="text" id="new-tab-keyword" placeholder="スペース区切りで複数入力可">
+      <label>キーワード（例：AI 人工知能）　※RSSから該当記事だけ絞り込みます</label>
+      <input type="text" id="new-tab-keyword" placeholder="スペース区切りで複数入力可（任意）">
+    </div>
+    <div class="modal-field">
+      <label>RSS URL（例：https://gigazine.net/news/rss_2.0/）　※省略するとBBC Newsを使用</label>
+      <input type="url" id="new-tab-rssurl" placeholder="https://...">
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" id="btn-cancel-tab">キャンセル</button>
