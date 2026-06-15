@@ -85,24 +85,19 @@ const App = {
     const tab = allTabs.find(t => t.id === tabId);
     if (!tab) { this.isLoading = false; this.setFetchBtnLoading(false); return; }
 
-    // RSSソース管理で登録されているURLを取得
-    const managedSources = Sources.getRssSources();
-    const enabledSourceUrls = managedSources.filter(s => s.enabled).map(s => s.url);
-    const hasManagedSources = managedSources.length > 0;
+    // タブ固有のURLを使う（カテゴリ分けの基本）
+    // カスタムタブでRSS URLが未指定の場合のみ、RSSソース管理の有効ソースを使う
+    let allUrls = Sources.getTabRssUrls(tab);
 
-    // RSSソース管理にソースが登録されている場合はそれを使用
-    // 登録がない場合はタブ固有のURLを使用（フォールバック）
-    let allUrls;
-    if (hasManagedSources) {
-      // 管理ソースを使う（チェックOFFはここで反映される）
-      allUrls = [...new Set(enabledSourceUrls)];
-    } else {
-      // 管理ソースが一件もない場合のみタブ固有URLを使う
-      allUrls = Sources.getTabRssUrls(tab);
+    if (!allUrls || allUrls.length === 0) {
+      // フォールバック：RSSソース管理で有効なもの
+      allUrls = Sources.getRssSources()
+        .filter(s => s.enabled)
+        .map(s => s.url);
     }
 
     if (!allUrls || allUrls.length === 0) {
-      this.showError('有効なRSSソースがありません。設定でRSSソースのチェックを入れてください。');
+      this.showError('有効なRSSソースがありません。設定でRSSソースを追加してください。');
       this.isLoading = false;
       this.setFetchBtnLoading(false);
       return;
@@ -124,13 +119,14 @@ const App = {
 
     // キーワードフィルタ（カスタムタブのみ）
     if (keyword && tab.id.startsWith('custom_')) {
-      const kw = keyword.toLowerCase();
-      const filtered = allItems.filter(item =>
-        (item.title || '').toLowerCase().includes(kw) ||
-        (item.description || '').toLowerCase().includes(kw)
-      );
-      // フィルタ結果が少なすぎる場合は全件使う
-      if (filtered.length >= 3) allItems = filtered;
+      const keywords = keyword.toLowerCase().split(/\s+/).filter(Boolean);
+      const filtered = allItems.filter(item => {
+        const text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
+        // いずれかのキーワードにマッチすればOK
+        return keywords.some(kw => text.includes(kw));
+      });
+      // フィルタ結果が1件以上あれば適用（関係ない記事を混入させない）
+      if (filtered.length > 0) allItems = filtered;
     }
 
     // 日付順ソート
