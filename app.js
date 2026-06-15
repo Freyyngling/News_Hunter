@@ -79,7 +79,7 @@ const App = {
     }
   },
 
-  // RSS取得
+  // RSS取得（複数APIフォールバック）
   async fetchArticles(tabId) {
     if (this.isLoading) return;
     this.isLoading = true;
@@ -93,25 +93,135 @@ const App = {
     const rssUrl = Sources.getTabRssUrl(tab);
     if (!rssUrl) { this.isLoading = false; return; }
 
-    const endpoint = `${this.config.rss2jsonEndpoint}?rss_url=${encodeURIComponent(rssUrl)}&count=${this.fetchCount}`;
+    const items = await this.fetchRssWithFallback(rssUrl);
 
-    try {
-      const res = await fetch(endpoint);
-      const data = await res.json();
-      if (data.status === 'ok' && data.items) {
-        Storage.setCache(tabId, data.items);
-        this.renderArticles(data.items, tabId);
-        const ts = new Date().toLocaleString('ja-JP');
-        this.setStatus(`取得: ${ts}　${data.items.length}件`);
-      } else {
-        this.showError('記事の取得に失敗しました。');
-      }
-    } catch (e) {
-      this.showError('ネットワークエラーが発生しました。');
+    if (items && items.length > 0) {
+      const sliced = items.slice(0, this.fetchCount);
+      Storage.setCache(tabId, sliced);
+      this.renderArticles(sliced, tabId);
+      const ts = new Date().toLocaleString('ja-JP');
+      this.setStatus(`取得: ${ts}　${sliced.length}件`);
+    } else {
+      this.showError('記事の取得に失敗しました。しばらく待ってから再度お試しください。');
     }
 
     this.isLoading = false;
     this.setFetchBtnLoading(false);
+  },
+
+  // 複数APIを順番に試すフォールバック
+  async fetchRssWithFallback(rssUrl) {
+    // 方法1: rss2json.com
+    try {
+      const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=100`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.status === 'ok' && data.items && data.items.length > 0) {
+        return this.normalizeRss2json(data.items);
+      }
+    } catch(e) {}
+
+    // 方法2: AllOrigins経由でRSS直接取得＋パース
+    try {
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+      const res = await fetch(proxy);
+      const data = await res.json();
+      if (data.contents) {
+        const items = this.parseRssXml(data.contents);
+        if (items && items.length > 0) return items;
+      }
+    } catch(e) {}
+
+    // 方法3: corsproxy.io経由
+    try {
+      const proxy = `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`;
+      const res = await fetch(proxy);
+      const text = await res.text();
+      if (text) {
+        const items = this.parseRssXml(text);
+        if (items && items.length > 0) return items;
+      }
+    } catch(e) {}
+
+    return null;
+  },
+
+  // rss2json形式を内部形式に正規化
+  normalizeRss2json(items) {
+    return items.map(item => ({
+      title: item.title || '',
+      link: item.link || '',
+      pubDate: item.pubDate || '',
+      author: item.author || '',
+      thumbnail: item.thumbnail || item.enclosure?.link || '',
+      description: item.description || item.content || '',
+      source: { title: item.author || '' },
+      enclosure: item.enclosure || {},
+    }));
+  },
+
+  // RSS/AtomのXMLを手動パース
+  parseRssXml(xmlText) {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xmlText, 'text/xml');
+      const items = [];
+
+      // RSS 2.0
+      const rssItems = doc.querySelectorAll('item');
+      if (rssItems.length > 0) {
+        rssItems.forEach(el => {
+          const get = (tag) => el.querySelector(tag)?.textContent?.trim() || '';
+          const link = get('link') || el.querySelector('guid')?.textContent?.trim() || '';
+          let imgUrl = '';
+          const enclosure = el.querySelector('enclosure');
+          if (enclosure && enclosure.getAttribute('type')?.startsWith('image')) {
+            imgUrl = enclosure.getAttribute('url') || '';
+          }
+          if (!imgUrl) {
+            const media = el.querySelector('content') || el.querySelector('thumbnail');
+            if (media) imgUrl = media.getAttribute('url') || '';
+          }
+          if (!imgUrl) {
+            const desc = get('description') || get('encoded');
+            const match = desc.match(/<img[^>]+src=["']([^"']+)["']/i);
+            if (match) imgUrl = match[1];
+          }
+          items.push({
+            title: get('title'),
+            link,
+            pubDate: get('pubDate'),
+            author: get('author') || get('creator') || '',
+            thumbnail: imgUrl,
+            description: get('description') || get('encoded') || '',
+            source: { title: get('source') || '' },
+            enclosure: {},
+          });
+        });
+        return items;
+      }
+
+      // Atom
+      const entries = doc.querySelectorAll('entry');
+      entries.forEach(el => {
+        const get = (tag) => el.querySelector(tag)?.textContent?.trim() || '';
+        const linkEl = el.querySelector('link[rel="alternate"]') || el.querySelector('link');
+        const link = linkEl?.getAttribute('href') || '';
+        items.push({
+          title: get('title'),
+          link,
+          pubDate: get('updated') || get('published') || '',
+          author: el.querySelector('author name')?.textContent?.trim() || '',
+          thumbnail: '',
+          description: get('summary') || get('content') || '',
+          source: { title: '' },
+          enclosure: {},
+        });
+      });
+      return items;
+    } catch(e) {
+      return [];
+    }
   },
 
   // 記事描画
