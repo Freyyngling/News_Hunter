@@ -59,12 +59,16 @@
       <input type="text" id="new-tab-name" placeholder="タブの名前">
     </div>
     <div class="modal-field">
-      <label>キーワード（例：AI 人工知能）　※RSSから該当記事だけ絞り込みます</label>
+      <label>キーワード（例：AI 人工知能）　※スペース区切りでOR検索、取得記事を絞り込みます</label>
       <input type="text" id="new-tab-keyword" placeholder="スペース区切りで複数入力可（任意）">
     </div>
     <div class="modal-field">
-      <label>RSS URL（例：https://gigazine.net/news/rss_2.0/）　※省略するとBBC Newsを使用</label>
-      <input type="url" id="new-tab-rssurl" placeholder="https://...">
+      <label>RSS URL　※直接入力、またはソース一覧から選ぶ</label>
+      <input type="url" id="new-tab-rssurl" placeholder="https://...（省略可）">
+    </div>
+    <div class="modal-field">
+      <label>登録済みRSSソースから選ぶ</label>
+      <div id="source-picker" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;"></div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" id="btn-cancel-tab">キャンセル</button>
@@ -80,8 +84,8 @@
 
     <!-- RSSソース管理 -->
     <div class="settings-section">
-      <h3>RSSソース管理（カスタムタブのフォールバック用）</h3>
-      <p style="font-size:0.75rem;color:#8892a4;margin-bottom:10px;">カスタムタブにRSS URLを指定しなかった場合、チェックが入っているソースから取得します。固定タブ（国内・国際等）はタブ専用のRSSを使うため影響を受けません。</p>
+      <h3>RSSソース一覧</h3>
+      <p style="font-size:0.75rem;color:#8892a4;margin-bottom:10px;">カスタムタブ追加時に選べるRSSソースの候補リストです。固定タブ（国内・国際等）はそれぞれ専用のRSSを使うためここの設定は影響しません。</p>
       <div id="rss-sources-list"></div>
       <div class="add-source-row">
         <input type="text" id="new-rss-name" placeholder="ソース名（例：GIGAZINE）">

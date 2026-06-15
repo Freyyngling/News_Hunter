@@ -85,19 +85,11 @@ const App = {
     const tab = allTabs.find(t => t.id === tabId);
     if (!tab) { this.isLoading = false; this.setFetchBtnLoading(false); return; }
 
-    // タブ固有のURLを使う（カテゴリ分けの基本）
-    // カスタムタブでRSS URLが未指定の場合のみ、RSSソース管理の有効ソースを使う
-    let allUrls = Sources.getTabRssUrls(tab);
+    // タブ固有のURLのみ使う（RSSソース管理パネルは取得に影響しない）
+    const allUrls = Sources.getTabRssUrls(tab);
 
     if (!allUrls || allUrls.length === 0) {
-      // フォールバック：RSSソース管理で有効なもの
-      allUrls = Sources.getRssSources()
-        .filter(s => s.enabled)
-        .map(s => s.url);
-    }
-
-    if (!allUrls || allUrls.length === 0) {
-      this.showError('有効なRSSソースがありません。設定でRSSソースを追加してください。');
+      this.showError('このタブにRSSが設定されていません。タブを削除して作り直してください。');
       this.isLoading = false;
       this.setFetchBtnLoading(false);
       return;
@@ -475,6 +467,23 @@ const App = {
   },
 
   showAddTabModal() {
+    // ソース候補ピッカーを描画
+    const picker = document.getElementById('source-picker');
+    picker.innerHTML = '';
+    Sources.getRssSources().forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'btn-secondary';
+      btn.style.cssText = 'font-size:0.75rem;padding:4px 10px;';
+      btn.textContent = s.name;
+      btn.addEventListener('click', () => {
+        document.getElementById('new-tab-rssurl').value = s.url;
+        // 選択状態を視覚的に示す
+        picker.querySelectorAll('button').forEach(b => b.style.borderColor = '');
+        btn.style.borderColor = '#3b82f6';
+        btn.style.color = '#3b82f6';
+      });
+      picker.appendChild(btn);
+    });
     document.getElementById('modal-add-tab').classList.add('open');
   },
 
