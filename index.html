@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0c12">
+  <title>Frey's News Hunter</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<!-- 背景レイヤー -->
+<div id="bg-layer"></div>
+<video id="bg-video" autoplay loop muted playsinline></video>
+<div id="bg-video-overlay"></div>
+
+<!-- アプリ本体 -->
+<div id="app">
+
+  <!-- ヘッダー -->
+  <header id="header">
+    <div class="header-top">
+      <h1 id="site-title">Frey's News Hunter</h1>
+      <div class="header-controls">
+        <div class="fetch-count-wrap">
+          <label for="fetch-count">件数</label>
+          <input type="number" id="fetch-count" value="20" min="1" max="200">
+        </div>
+        <button class="btn-icon" id="btn-view">☰ リスト</button>
+        <button class="btn-icon" id="btn-bg">🖼️ 背景</button>
+        <button class="btn-icon" id="btn-settings">⚙️ 設定</button>
+        <button id="btn-fetch">🔄 今すぐ取得</button>
+      </div>
+    </div>
+    <div id="status-bar">タブを選んで取得ボタンを押してください</div>
+  </header>
+
+  <!-- タブバー -->
+  <div id="tab-bar-wrap">
+    <div id="tab-bar"></div>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <main id="main-content">
+    <div id="articles-container">
+      <div class="no-articles">タブを選択して「今すぐ取得」を押すと記事が表示されます。</div>
+    </div>
+  </main>
+
+</div><!-- /#app -->
+
+<!-- ===== モーダル：タブ追加 ===== -->
+<div class="modal-overlay" id="modal-add-tab">
+  <div class="modal-box">
+    <h2>📌 カスタムタブを追加</h2>
+    <div class="modal-field">
+      <label>タブ名（例：AI・人工知能）</label>
+      <input type="text" id="new-tab-name" placeholder="タブの名前">
+    </div>
+    <div class="modal-field">
+      <label>キーワード（例：AI 人工知能 機械学習）</label>
+      <input type="text" id="new-tab-keyword" placeholder="スペース区切りで複数入力可">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-cancel-tab">キャンセル</button>
+      <button class="btn-primary" id="btn-save-tab">追加する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル：設定 ===== -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal-box wide">
+    <h2>⚙️ 設定</h2>
+
+    <!-- RSSソース管理 -->
+    <div class="settings-section">
+      <h3>RSSソース管理</h3>
+      <div id="rss-sources-list"></div>
+      <div class="add-source-row">
+        <input type="text" id="new-rss-name" placeholder="ソース名（例：GIGAZINE）">
+        <input type="url" id="new-rss-url" placeholder="RSSのURL">
+        <button class="btn-primary" id="btn-add-rss">追加</button>
+      </div>
+    </div>
+
+    <!-- カスタムタブ管理 -->
+    <div class="settings-section">
+      <h3>カスタムタブ管理</h3>
+      <div id="custom-tabs-list"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" id="btn-close-settings">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== モーダル：背景設定 ===== -->
+<div class="modal-overlay" id="modal-bg">
+  <div class="modal-box">
+    <h2>🖼️ 背景設定</h2>
+
+    <div id="bg-thumbs"></div>
+
+    <div class="bg-upload-area">
+      <label>自分の画像をアップロード（JPEG・PNG）</label>
+      <input type="file" id="bg-upload-input" accept=".jpg,.jpeg,.png">
+    </div>
+
+    <div class="zoom-row">
+      <label>表示サイズ</label>
+      <input type="range" id="bg-zoom-slider" min="50" max="200" value="100" step="5">
+      <span id="bg-zoom-value">100%</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" id="btn-close-bg">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script src="storage.js"></script>
+<script src="sources.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
