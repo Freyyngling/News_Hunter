@@ -86,21 +86,23 @@ const App = {
     this.setStatus(`取得中... (${urls.map(u => { try { return new URL(u).hostname; } catch(e) { return u; }}).join(', ')})`);
 
     let allItems = [];
-    const results = await Promise.allSettled(urls.map(u => this.fetchSingleRss(u)));
+    const results = await Promise.allSettled(urls.map(u => this.fetchSingleRss(u, this.fetchCount)));
     results.forEach(r => {
       if (r.status === 'fulfilled' && r.value?.length > 0)
         allItems = allItems.concat(r.value);
     });
 
-    // キーワードフィルタ（カスタムタブのみ）
-    const keyword = tab.keyword || '';
-    if (keyword && tab.id.startsWith('custom_')) {
+    // キーワードフィルタ
+    // カスタムタブ：tab.keyword、固定タブ：tab.filterKeyword
+    const keyword = tab.keyword || tab.filterKeyword || '';
+    if (keyword) {
       const kws = keyword.toLowerCase().split(/\s+/).filter(Boolean);
       const filtered = allItems.filter(item => {
         const text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
         return kws.some(k => text.includes(k));
       });
-      if (filtered.length > 0) allItems = filtered;
+      // フィルタ後に件数が極端に少ない場合（5件未満）はフィルタなしで全件使う
+      if (filtered.length >= 5) allItems = filtered;
     }
 
     // 日付降順ソート
@@ -128,10 +130,11 @@ const App = {
     this.setFetchBtnLoading(false);
   },
 
-  async fetchSingleRss(rssUrl) {
+  async fetchSingleRss(rssUrl, count) {
+    count = count || 50;
     const proxies = [
       async (url) => {
-        const r = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=50`, { signal: AbortSignal.timeout(8000) });
+        const r = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=${count}`, { signal: AbortSignal.timeout(8000) });
         const d = await r.json();
         if (d.status === 'ok' && d.items?.length > 0) {
           return d.items.map(item => ({
