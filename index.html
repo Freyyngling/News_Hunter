@@ -51,6 +51,31 @@
 
 </div>
 
+<!-- カテゴリ追加モーダル -->
+<div class="modal-overlay" id="modal-add-cat">
+  <div class="modal-box">
+    <h2>➕ カテゴリを追加</h2>
+    <p style="font-size:.78rem;color:#8892a4;margin-bottom:14px;">ソース: <strong id="add-cat-group-name"></strong></p>
+    <input type="hidden" id="add-cat-group-id">
+    <div class="modal-field">
+      <label>カテゴリ名（例：AI・テクノロジー）</label>
+      <input type="text" id="add-cat-name" placeholder="カテゴリ名">
+    </div>
+    <div class="modal-field">
+      <label>RSS URL</label>
+      <input type="url" id="add-cat-url" placeholder="https://...">
+    </div>
+    <div class="modal-field">
+      <label>キーワードフィルタ（任意）　スペース区切りOR検索</label>
+      <input type="text" id="add-cat-kw" placeholder="例：AI 人工知能 ChatGPT">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-cancel-cat">キャンセル</button>
+      <button class="btn-primary" id="btn-save-cat">追加する</button>
+    </div>
+  </div>
+</div>
+
 <!-- ソースグループ追加モーダル -->
 <div class="modal-overlay" id="modal-add-group">
   <div class="modal-box">

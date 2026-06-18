@@ -242,19 +242,67 @@ const App = {
         nodes.forEach(el => {
           const get = t => el.querySelector(t)?.textContent?.trim() || '';
           const link = get('link') || el.querySelector('guid')?.textContent?.trim() || '';
+
+          // 画像取得：複数の方法を優先順で試す
           let img = '';
+
+          // 1. enclosure[type=image/*]
           const enc = el.querySelector('enclosure');
           if (enc?.getAttribute('type')?.startsWith('image')) img = enc.getAttribute('url') || '';
-          if (!img) { const m = el.querySelector('[url]'); if (m) img = m.getAttribute('url') || ''; }
-          if (!img) { const mx = get('description').match(/<img[^>]+src=["']([^"']+)["']/i); if (mx) img = mx[1]; }
-          items.push({ title: get('title'), link, pubDate: get('pubDate'), author: get('author') || get('creator') || '', thumbnail: img, description: get('description') || '' });
+
+          // 2. media:content[url] (Yahoo, Reuters等)
+          if (!img) {
+            const mc = el.querySelector('content');
+            if (mc?.getAttribute('url')) img = mc.getAttribute('url');
+          }
+
+          // 3. media:thumbnail[url]
+          if (!img) {
+            const mt = el.querySelector('thumbnail');
+            if (mt?.getAttribute('url')) img = mt.getAttribute('url');
+          }
+
+          // 4. url属性を持つ任意の要素
+          if (!img) {
+            const anyUrl = el.querySelector('[url]');
+            if (anyUrl) {
+              const u = anyUrl.getAttribute('url');
+              if (u && (u.match(/\.(jpg|jpeg|png|gif|webp)/i) || u.includes('image'))) img = u;
+            }
+          }
+
+          // 5. description内のimg src
+          if (!img) {
+            const desc = get('description');
+            const mx = desc.match(/<img[^>]+src=["']([^"']+)["']/i);
+            if (mx) img = mx[1];
+          }
+
+          items.push({
+            title: get('title'),
+            link,
+            pubDate: get('pubDate'),
+            author: get('author') || get('creator') || get('source') || '',
+            thumbnail: img,
+            description: get('description') || ''
+          });
         });
         return items;
       }
+
+      // Atom形式
       doc.querySelectorAll('entry').forEach(el => {
         const get = t => el.querySelector(t)?.textContent?.trim() || '';
         const lnk = (el.querySelector('link[rel="alternate"]') || el.querySelector('link'))?.getAttribute('href') || '';
-        items.push({ title: get('title'), link: lnk, pubDate: get('updated') || get('published') || '', author: el.querySelector('author name')?.textContent?.trim() || '', thumbnail: '', description: get('summary') || get('content') || '' });
+        let img = '';
+        const mc = el.querySelector('content[url], thumbnail[url]');
+        if (mc) img = mc.getAttribute('url') || '';
+        items.push({
+          title: get('title'), link: lnk,
+          pubDate: get('updated') || get('published') || '',
+          author: el.querySelector('author name')?.textContent?.trim() || '',
+          thumbnail: img, description: get('summary') || get('content') || ''
+        });
       });
       return items;
     } catch(e) { return []; }
@@ -494,6 +542,38 @@ const App = {
     });
   },
 
+  // ===== カテゴリ追加モーダル（サブタブの＋ボタン）=====
+  showAddCategoryModal(groupId) {
+    const group = Sources.getGroup(groupId);
+    if (!group) return;
+    document.getElementById('add-cat-group-name').textContent = group.label;
+    document.getElementById('add-cat-group-id').value = groupId;
+    document.getElementById('add-cat-name').value = '';
+    document.getElementById('add-cat-url').value = '';
+    document.getElementById('add-cat-kw').value = '';
+    document.getElementById('modal-add-cat').classList.add('open');
+  },
+
+  hideAddCategoryModal() {
+    document.getElementById('modal-add-cat').classList.remove('open');
+  },
+
+  saveNewCategory() {
+    const groupId = document.getElementById('add-cat-group-id').value;
+    const name = document.getElementById('add-cat-name').value.trim();
+    const url  = document.getElementById('add-cat-url').value.trim();
+    const kw   = document.getElementById('add-cat-kw').value.trim();
+    if (!name) { alert('カテゴリ名を入力してください。'); return; }
+    if (!url)  { alert('RSS URLを入力してください。'); return; }
+    Sources.addCategory(groupId, name, url, kw);
+    this.renderCategoryTabs(groupId);
+    this.hideAddCategoryModal();
+    // 追加したカテゴリを選択
+    const group = Sources.getGroup(groupId);
+    const newCat = group.categories[group.categories.length - 1];
+    if (newCat) this.selectCategory(groupId, newCat.id);
+  },
+
   // ===== ソースグループ追加モーダル =====
   showAddGroupModal() {
     document.getElementById('new-group-name').value = '';
@@ -580,13 +660,15 @@ const App = {
       Storage.saveSetting('fetchCount', v);
     });
 
-    ['modal-add-group','modal-settings','modal-bg'].forEach(id => {
+    ['modal-add-group','modal-add-cat','modal-settings','modal-bg'].forEach(id => {
       document.getElementById(id).addEventListener('click', e => {
         if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
       });
     });
 
     document.getElementById('btn-save-group').addEventListener('click', () => this.saveNewGroup());
+    document.getElementById('btn-save-cat').addEventListener('click', () => this.saveNewCategory());
+    document.getElementById('btn-cancel-cat').addEventListener('click', () => this.hideAddCategoryModal());
     document.getElementById('btn-cancel-group').addEventListener('click', () => this.hideAddGroupModal());
     document.getElementById('btn-close-settings').addEventListener('click', () => this.hideSettingsModal());
     document.getElementById('btn-close-bg').addEventListener('click', () => this.hideBgModal());

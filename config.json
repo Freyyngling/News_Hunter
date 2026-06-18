@@ -1,21 +1,53 @@
 {
   "siteTitle": "Frey's News Hunter",
   "defaultFetchCount": 20,
-  "configVersion": "2025-06-18-v1",
+  "configVersion": "2025-06-18-v2",
   "sourceGroups": [
     {
       "id": "nhk",
       "label": "🇯🇵 NHK",
       "color": "#3b82f6",
       "categories": [
-        { "id": "nhk_top",     "label": "トップ",       "rssUrl": "https://www.nhk.or.jp/rss/news/cat0.xml" },
-        { "id": "nhk_social",  "label": "社会",         "rssUrl": "https://www.nhk.or.jp/rss/news/cat1.xml" },
-        { "id": "nhk_world",   "label": "国際",         "rssUrl": "https://www.nhk.or.jp/rss/news/cat6.xml" },
-        { "id": "nhk_economy", "label": "経済",         "rssUrl": "https://www.nhk.or.jp/rss/news/cat4.xml" },
-        { "id": "nhk_culture", "label": "文化・エンタメ","rssUrl": "https://www.nhk.or.jp/rss/news/cat2.xml" },
-        { "id": "nhk_sports",  "label": "スポーツ",     "rssUrl": "https://www.nhk.or.jp/rss/news/cat7.xml" },
-        { "id": "nhk_science", "label": "科学・医療",   "rssUrl": "https://www.nhk.or.jp/rss/news/cat3.xml" },
-        { "id": "nhk_politics","label": "政治",         "rssUrl": "https://www.nhk.or.jp/rss/news/cat5.xml" }
+        {
+          "id": "nhk_top",
+          "label": "トップ",
+          "rssUrl": "https://www.nhk.or.jp/rss/news/cat0.xml"
+        },
+        {
+          "id": "nhk_social",
+          "label": "社会",
+          "rssUrl": "https://www.nhk.or.jp/rss/news/cat1.xml"
+        },
+        {
+          "id": "nhk_world",
+          "label": "国際",
+          "rssUrl": "https://www.nhk.or.jp/rss/news/cat6.xml"
+        },
+        {
+          "id": "nhk_economy",
+          "label": "経済",
+          "rssUrl": "https://www.nhk.or.jp/rss/news/cat4.xml"
+        },
+        {
+          "id": "nhk_culture",
+          "label": "文化・エンタメ",
+          "rssUrl": "https://www.nhk.or.jp/rss/news/cat2.xml"
+        },
+        {
+          "id": "nhk_sports",
+          "label": "スポーツ",
+          "rssUrl": "https://www.nhk.or.jp/rss/news/cat7.xml"
+        },
+        {
+          "id": "nhk_science",
+          "label": "科学・医療",
+          "rssUrl": "https://www.nhk.or.jp/rss/news/cat3.xml"
+        },
+        {
+          "id": "nhk_politics",
+          "label": "政治",
+          "rssUrl": "https://www.nhk.or.jp/rss/news/cat5.xml"
+        }
       ]
     },
     {
@@ -23,14 +55,53 @@
       "label": "📰 GIGAZINE",
       "color": "#f97316",
       "categories": [
-        { "id": "giga_all",     "label": "全記事",       "rssUrl": "https://gigazine.net/news/rss_2.0/" },
-        { "id": "giga_tech",    "label": "テクノロジー", "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "テクノロジー technology ソフトウェア software ハードウェア hardware" },
-        { "id": "giga_science", "label": "サイエンス",   "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "科学 サイエンス science 研究 宇宙 space 生物 物理" },
-        { "id": "giga_game",    "label": "ゲーム",       "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "ゲーム game Steam PlayStation Xbox Nintendo Switch" },
-        { "id": "giga_ai",      "label": "AI",           "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "AI 人工知能 ChatGPT LLM 機械学習 deep learning" },
-        { "id": "giga_security","label": "セキュリティ", "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "セキュリティ security ハッキング hacking マルウェア" },
-        { "id": "giga_food",    "label": "食",           "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "食 料理 グルメ レストラン food 飲み物" },
-        { "id": "giga_design",  "label": "デザイン",     "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "デザイン design アート art 映像 動画" }
+        {
+          "id": "giga_all",
+          "label": "全記事",
+          "rssUrl": "https://gigazine.net/news/rss_2.0/"
+        },
+        {
+          "id": "giga_tech",
+          "label": "テクノロジー",
+          "rssUrl": "https://gigazine.net/news/rss_2.0/",
+          "keyword": "テクノロジー technology ソフトウェア software ハードウェア hardware"
+        },
+        {
+          "id": "giga_science",
+          "label": "サイエンス",
+          "rssUrl": "https://gigazine.net/news/rss_2.0/",
+          "keyword": "科学 サイエンス science 研究 宇宙 space 生物 物理"
+        },
+        {
+          "id": "giga_game",
+          "label": "ゲーム",
+          "rssUrl": "https://gigazine.net/news/rss_2.0/",
+          "keyword": "ゲーム game Steam PlayStation Xbox Nintendo Switch"
+        },
+        {
+          "id": "giga_ai",
+          "label": "AI",
+          "rssUrl": "https://gigazine.net/news/rss_2.0/",
+          "keyword": "AI 人工知能 ChatGPT LLM 機械学習 deep learning"
+        },
+        {
+          "id": "giga_security",
+          "label": "セキュリティ",
+          "rssUrl": "https://gigazine.net/news/rss_2.0/",
+          "keyword": "セキュリティ security ハッキング hacking マルウェア"
+        },
+        {
+          "id": "giga_food",
+          "label": "食",
+          "rssUrl": "https://gigazine.net/news/rss_2.0/",
+          "keyword": "食 料理 グルメ レストラン food 飲み物"
+        },
+        {
+          "id": "giga_design",
+          "label": "デザイン",
+          "rssUrl": "https://gigazine.net/news/rss_2.0/",
+          "keyword": "デザイン design アート art 映像 動画"
+        }
       ]
     },
     {
@@ -38,13 +109,41 @@
       "label": "🌍 BBC",
       "color": "#8b5cf6",
       "categories": [
-        { "id": "bbc_world",   "label": "World",       "rssUrl": "https://feeds.bbci.co.uk/news/world/rss.xml" },
-        { "id": "bbc_tech",    "label": "Technology",  "rssUrl": "https://feeds.bbci.co.uk/news/technology/rss.xml" },
-        { "id": "bbc_science", "label": "Science",     "rssUrl": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml" },
-        { "id": "bbc_health",  "label": "Health",      "rssUrl": "https://feeds.bbci.co.uk/news/health/rss.xml" },
-        { "id": "bbc_business","label": "Business",    "rssUrl": "https://feeds.bbci.co.uk/news/business/rss.xml" },
-        { "id": "bbc_ent",     "label": "Entertainment","rssUrl": "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml" },
-        { "id": "bbc_sport",   "label": "Sport",       "rssUrl": "https://feeds.bbci.co.uk/sport/rss.xml" }
+        {
+          "id": "bbc_world",
+          "label": "World",
+          "rssUrl": "https://feeds.bbci.co.uk/news/world/rss.xml"
+        },
+        {
+          "id": "bbc_tech",
+          "label": "Technology",
+          "rssUrl": "https://feeds.bbci.co.uk/news/technology/rss.xml"
+        },
+        {
+          "id": "bbc_science",
+          "label": "Science",
+          "rssUrl": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"
+        },
+        {
+          "id": "bbc_health",
+          "label": "Health",
+          "rssUrl": "https://feeds.bbci.co.uk/news/health/rss.xml"
+        },
+        {
+          "id": "bbc_business",
+          "label": "Business",
+          "rssUrl": "https://feeds.bbci.co.uk/news/business/rss.xml"
+        },
+        {
+          "id": "bbc_ent",
+          "label": "Entertainment",
+          "rssUrl": "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml"
+        },
+        {
+          "id": "bbc_sport",
+          "label": "Sport",
+          "rssUrl": "https://feeds.bbci.co.uk/sport/rss.xml"
+        }
       ]
     },
     {
@@ -52,17 +151,99 @@
       "label": "📡 Reuters",
       "color": "#ef4444",
       "categories": [
-        { "id": "reuters_top",  "label": "Top News",  "rssUrl": "https://feeds.reuters.com/reuters/topNews" },
-        { "id": "reuters_world","label": "World",     "rssUrl": "https://feeds.reuters.com/reuters/worldNews" },
-        { "id": "reuters_biz",  "label": "Business",  "rssUrl": "https://feeds.reuters.com/reuters/businessNews" },
-        { "id": "reuters_tech", "label": "Technology","rssUrl": "https://feeds.reuters.com/reuters/technologyNews" },
-        { "id": "reuters_sci",  "label": "Science",   "rssUrl": "https://feeds.reuters.com/reuters/scienceNews" }
+        {
+          "id": "reuters_top",
+          "label": "Top News",
+          "rssUrl": "https://feeds.reuters.com/reuters/topNews"
+        },
+        {
+          "id": "reuters_world",
+          "label": "World",
+          "rssUrl": "https://feeds.reuters.com/reuters/worldNews"
+        },
+        {
+          "id": "reuters_biz",
+          "label": "Business",
+          "rssUrl": "https://feeds.reuters.com/reuters/businessNews"
+        },
+        {
+          "id": "reuters_tech",
+          "label": "Technology",
+          "rssUrl": "https://feeds.reuters.com/reuters/technologyNews"
+        },
+        {
+          "id": "reuters_sci",
+          "label": "Science",
+          "rssUrl": "https://feeds.reuters.com/reuters/scienceNews"
+        }
+      ]
+    },
+    {
+      "id": "yahoo",
+      "label": "🟡 Yahoo!",
+      "color": "#f59e0b",
+      "categories": [
+        {
+          "id": "yahoo_yonnana",
+          "label": "ヨンナナ",
+          "rssUrl": "https://news.yahoo.co.jp/rss/media/yonnana/all.xml"
+        },
+        {
+          "id": "yahoo_top",
+          "label": "主要",
+          "rssUrl": "https://news.yahoo.co.jp/rss/topics/top-picks.xml"
+        },
+        {
+          "id": "yahoo_it",
+          "label": "IT・科学",
+          "rssUrl": "https://news.yahoo.co.jp/rss/topics/it.xml"
+        },
+        {
+          "id": "yahoo_ent",
+          "label": "エンタメ",
+          "rssUrl": "https://news.yahoo.co.jp/rss/topics/entertainment.xml"
+        },
+        {
+          "id": "yahoo_sports",
+          "label": "スポーツ",
+          "rssUrl": "https://news.yahoo.co.jp/rss/topics/sports.xml"
+        },
+        {
+          "id": "yahoo_domestic",
+          "label": "国内",
+          "rssUrl": "https://news.yahoo.co.jp/rss/topics/domestic.xml"
+        },
+        {
+          "id": "yahoo_world",
+          "label": "国際",
+          "rssUrl": "https://news.yahoo.co.jp/rss/topics/world.xml"
+        },
+        {
+          "id": "yahoo_biz",
+          "label": "経済",
+          "rssUrl": "https://news.yahoo.co.jp/rss/topics/business.xml"
+        }
       ]
     }
   ],
   "backgrounds": [
-    { "id": "bg1", "file": "bg/bg1.jpeg", "type": "image", "label": "Background 1" },
-    { "id": "bg2", "file": "bg/bg2.jpeg", "type": "image", "label": "Background 2" },
-    { "id": "bg3", "file": "bg/bg3.mp4",  "type": "video", "label": "Background 3" }
+    {
+      "id": "bg1",
+      "file": "bg/bg1.jpeg",
+      "type": "image",
+      "label": "Background 1"
+    },
+    {
+      "id": "bg2",
+      "file": "bg/bg2.jpeg",
+      "type": "image",
+      "label": "Background 2"
+    },
+    {
+      "id": "bg3",
+      "file": "bg/bg3.mp4",
+      "type": "video",
+      "label": "Background 3"
+    }
   ]
 }
