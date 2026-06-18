@@ -1,306 +1,68 @@
 {
   "siteTitle": "Frey's News Hunter",
   "defaultFetchCount": 20,
-  "fixedTabs": [
-    {
-      "id": "jp_top",
-      "label": "🇯🇵 国内",
-      "icon": "🇯🇵",
-      "rssUrls": [
-        "https://www.nhk.or.jp/rss/news/cat0.xml"
-      ],
-      "color": "#3b82f6",
-      "filterKeyword": ""
-    },
-    {
-      "id": "world_top",
-      "label": "🌏 国際",
-      "icon": "🌏",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/world/rss.xml",
-        "https://feeds.reuters.com/reuters/worldNews"
-      ],
-      "color": "#8b5cf6",
-      "filterKeyword": ""
-    },
-    {
-      "id": "technology",
-      "label": "💻 テクノロジー",
-      "icon": "💻",
-      "rssUrls": [
-        "https://gigazine.net/news/rss_2.0/",
-        "https://wired.jp/rss/"
-      ],
-      "color": "#06b6d4",
-      "filterKeyword": "テクノロジー technology tech AI software hardware gadget ゲーム game"
-    },
-    {
-      "id": "science",
-      "label": "🔬 科学・研究",
-      "icon": "🔬",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
-        "https://rss.nytimes.com/services/xml/rss/nyt/Science.xml"
-      ],
-      "color": "#10b981",
-      "filterKeyword": "science 科学 research 研究 space 宇宙 climate environment 環境"
-    },
-    {
-      "id": "health",
-      "label": "🏥 健康・医療",
-      "icon": "🏥",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/health/rss.xml",
-        "https://rss.nytimes.com/services/xml/rss/nyt/Health.xml"
-      ],
-      "color": "#f59e0b",
-      "filterKeyword": "health 健康 medical 医療 disease 病気 diet nutrition 栄養 mental"
-    },
-    {
-      "id": "business",
-      "label": "📈 経済",
-      "icon": "📈",
-      "rssUrls": [
-        "https://www.nhk.or.jp/rss/news/cat4.xml",
-        "https://feeds.bbci.co.uk/news/business/rss.xml"
-      ],
-      "color": "#f97316",
-      "filterKeyword": "business 経済 economy market 市場 finance 金融 stock 株 GDP"
-    },
-    {
-      "id": "entertainment",
-      "label": "🎬 エンタメ",
-      "icon": "🎬",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml"
-      ],
-      "color": "#ec4899",
-      "filterKeyword": "entertainment エンタメ music 音楽 film 映画 art 芸術 celebrity"
-    },
-    {
-      "id": "sports",
-      "label": "⚽ スポーツ",
-      "icon": "⚽",
-      "rssUrls": [
-        "https://www.nhk.or.jp/rss/news/cat7.xml",
-        "https://feeds.bbci.co.uk/sport/rss.xml"
-      ],
-      "color": "#84cc16",
-      "filterKeyword": "sports スポーツ football soccer baseball basketball tennis"
-    }
-  ],
-  "defaultCustomTabs": [
-    {
-      "id": "custom_ai",
-      "label": "🤖 AI・人工知能",
-      "icon": "🤖",
-      "type": "rss",
-      "rssUrls": [
-        "https://gigazine.net/news/rss_2.0/"
-      ],
-      "keyword": "AI 人工知能 ChatGPT LLM",
-      "color": "#6366f1"
-    },
-    {
-      "id": "custom_uap",
-      "label": "🛸 UAP・UFO",
-      "icon": "🛸",
-      "type": "rss",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/rss.xml"
-      ],
-      "keyword": "UAP UFO unidentified",
-      "color": "#a855f7"
-    },
-    {
-      "id": "custom_space",
-      "label": "🚀 宇宙開発",
-      "icon": "🚀",
-      "type": "rss",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
-        "https://rss.nytimes.com/services/xml/rss/nyt/Space.xml"
-      ],
-      "keyword": "宇宙 space NASA SpaceX rocket",
-      "color": "#0ea5e9"
-    },
-    {
-      "id": "custom_geopolitics",
-      "label": "🗺️ 地政学",
-      "icon": "🗺️",
-      "type": "rss",
-      "rssUrls": [
-        "https://feeds.reuters.com/reuters/worldNews",
-        "https://feeds.bbci.co.uk/news/world/rss.xml"
-      ],
-      "keyword": "地政学 geopolitics 安全保障 外交 戦争 conflict",
-      "color": "#ef4444"
-    },
-    {
-      "id": "custom_longevity",
-      "label": "🧬 長寿・老化研究",
-      "icon": "🧬",
-      "type": "rss",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/health/rss.xml",
-        "https://rss.nytimes.com/services/xml/rss/nyt/Health.xml"
-      ],
-      "keyword": "longevity aging 老化 長寿 寿命 antiaging",
-      "color": "#14b8a6"
-    },
-    {
-      "id": "custom_music",
-      "label": "🎵 音楽・DTM",
-      "icon": "🎵",
-      "type": "rss",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml"
-      ],
-      "keyword": "音楽 music DTM DAW 作曲",
-      "color": "#f43f5e"
-    },
-    {
-      "id": "custom_game",
-      "label": "🎮 ゲーム・Steam",
-      "icon": "🎮",
-      "type": "rss",
-      "rssUrls": [
-        "https://gigazine.net/news/rss_2.0/"
-      ],
-      "keyword": "ゲーム game Steam PlayStation Xbox Nintendo",
-      "color": "#22c55e"
-    },
-    {
-      "id": "custom_occult",
-      "label": "👁️ 陰謀論・オカルト",
-      "icon": "👁️",
-      "type": "rss",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/rss.xml"
-      ],
-      "keyword": "conspiracy theory paranormal occult secret",
-      "color": "#7c3aed"
-    },
-    {
-      "id": "custom_nutrition",
-      "label": "🥗 健康・栄養",
-      "icon": "🥗",
-      "type": "rss",
-      "rssUrls": [
-        "https://feeds.bbci.co.uk/news/health/rss.xml",
-        "https://rss.nytimes.com/services/xml/rss/nyt/Health.xml"
-      ],
-      "keyword": "nutrition diet 栄養 食事 supplement サプリ",
-      "color": "#65a30d"
-    },
-    {
-      "id": "custom_tech_news",
-      "label": "⚡ 最新テック",
-      "icon": "⚡",
-      "type": "rss",
-      "rssUrls": [
-        "https://wired.jp/rss/",
-        "https://gigazine.net/news/rss_2.0/"
-      ],
-      "keyword": "テクノロジー technology innovation 技術 発明",
-      "color": "#f59e0b"
-    }
-  ],
-  "defaultRssSources": [
+  "configVersion": "2025-06-18-v1",
+  "sourceGroups": [
     {
       "id": "nhk",
-      "name": "NHK ニュース",
-      "url": "https://www.nhk.or.jp/rss/news/cat0.xml"
+      "label": "🇯🇵 NHK",
+      "color": "#3b82f6",
+      "categories": [
+        { "id": "nhk_top",     "label": "トップ",       "rssUrl": "https://www.nhk.or.jp/rss/news/cat0.xml" },
+        { "id": "nhk_social",  "label": "社会",         "rssUrl": "https://www.nhk.or.jp/rss/news/cat1.xml" },
+        { "id": "nhk_world",   "label": "国際",         "rssUrl": "https://www.nhk.or.jp/rss/news/cat6.xml" },
+        { "id": "nhk_economy", "label": "経済",         "rssUrl": "https://www.nhk.or.jp/rss/news/cat4.xml" },
+        { "id": "nhk_culture", "label": "文化・エンタメ","rssUrl": "https://www.nhk.or.jp/rss/news/cat2.xml" },
+        { "id": "nhk_sports",  "label": "スポーツ",     "rssUrl": "https://www.nhk.or.jp/rss/news/cat7.xml" },
+        { "id": "nhk_science", "label": "科学・医療",   "rssUrl": "https://www.nhk.or.jp/rss/news/cat3.xml" },
+        { "id": "nhk_politics","label": "政治",         "rssUrl": "https://www.nhk.or.jp/rss/news/cat5.xml" }
+      ]
     },
     {
       "id": "gigazine",
-      "name": "GIGAZINE",
-      "url": "https://gigazine.net/news/rss_2.0/"
+      "label": "📰 GIGAZINE",
+      "color": "#f97316",
+      "categories": [
+        { "id": "giga_all",     "label": "全記事",       "rssUrl": "https://gigazine.net/news/rss_2.0/" },
+        { "id": "giga_tech",    "label": "テクノロジー", "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "テクノロジー technology ソフトウェア software ハードウェア hardware" },
+        { "id": "giga_science", "label": "サイエンス",   "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "科学 サイエンス science 研究 宇宙 space 生物 物理" },
+        { "id": "giga_game",    "label": "ゲーム",       "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "ゲーム game Steam PlayStation Xbox Nintendo Switch" },
+        { "id": "giga_ai",      "label": "AI",           "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "AI 人工知能 ChatGPT LLM 機械学習 deep learning" },
+        { "id": "giga_security","label": "セキュリティ", "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "セキュリティ security ハッキング hacking マルウェア" },
+        { "id": "giga_food",    "label": "食",           "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "食 料理 グルメ レストラン food 飲み物" },
+        { "id": "giga_design",  "label": "デザイン",     "rssUrl": "https://gigazine.net/news/rss_2.0/", "keyword": "デザイン design アート art 映像 動画" }
+      ]
     },
     {
       "id": "bbc",
-      "name": "BBC News",
-      "url": "https://feeds.bbci.co.uk/news/rss.xml"
-    },
-    {
-      "id": "bbc_tech",
-      "name": "BBC Technology",
-      "url": "https://feeds.bbci.co.uk/news/technology/rss.xml"
-    },
-    {
-      "id": "bbc_sci",
-      "name": "BBC Science",
-      "url": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"
-    },
-    {
-      "id": "bbc_hlth",
-      "name": "BBC Health",
-      "url": "https://feeds.bbci.co.uk/news/health/rss.xml"
+      "label": "🌍 BBC",
+      "color": "#8b5cf6",
+      "categories": [
+        { "id": "bbc_world",   "label": "World",       "rssUrl": "https://feeds.bbci.co.uk/news/world/rss.xml" },
+        { "id": "bbc_tech",    "label": "Technology",  "rssUrl": "https://feeds.bbci.co.uk/news/technology/rss.xml" },
+        { "id": "bbc_science", "label": "Science",     "rssUrl": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml" },
+        { "id": "bbc_health",  "label": "Health",      "rssUrl": "https://feeds.bbci.co.uk/news/health/rss.xml" },
+        { "id": "bbc_business","label": "Business",    "rssUrl": "https://feeds.bbci.co.uk/news/business/rss.xml" },
+        { "id": "bbc_ent",     "label": "Entertainment","rssUrl": "https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml" },
+        { "id": "bbc_sport",   "label": "Sport",       "rssUrl": "https://feeds.bbci.co.uk/sport/rss.xml" }
+      ]
     },
     {
       "id": "reuters",
-      "name": "Reuters World",
-      "url": "https://feeds.reuters.com/reuters/worldNews"
-    },
-    {
-      "id": "nyt_tech",
-      "name": "NYT Technology",
-      "url": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"
-    },
-    {
-      "id": "nyt_sci",
-      "name": "NYT Science",
-      "url": "https://rss.nytimes.com/services/xml/rss/nyt/Science.xml"
-    },
-    {
-      "id": "wired_jp",
-      "name": "WIRED Japan",
-      "url": "https://wired.jp/rss/"
-    },
-    {
-      "id": "yahoo_top",
-      "name": "Yahoo!ニュース 主要",
-      "url": "https://news.yahoo.co.jp/rss/topics/top-picks.xml"
-    },
-    {
-      "id": "yahoo_it",
-      "name": "Yahoo!ニュース IT",
-      "url": "https://news.yahoo.co.jp/rss/topics/it.xml"
-    },
-    {
-      "id": "yahoo_sci",
-      "name": "Yahoo!ニュース 科学",
-      "url": "https://news.yahoo.co.jp/rss/topics/science.xml"
-    },
-    {
-      "id": "yahoo_ent",
-      "name": "Yahoo!ニュース エンタメ",
-      "url": "https://news.yahoo.co.jp/rss/topics/entertainment.xml"
-    },
-    {
-      "id": "yahoo_sp",
-      "name": "Yahoo!ニュース スポーツ",
-      "url": "https://news.yahoo.co.jp/rss/topics/sports.xml"
+      "label": "📡 Reuters",
+      "color": "#ef4444",
+      "categories": [
+        { "id": "reuters_top",  "label": "Top News",  "rssUrl": "https://feeds.reuters.com/reuters/topNews" },
+        { "id": "reuters_world","label": "World",     "rssUrl": "https://feeds.reuters.com/reuters/worldNews" },
+        { "id": "reuters_biz",  "label": "Business",  "rssUrl": "https://feeds.reuters.com/reuters/businessNews" },
+        { "id": "reuters_tech", "label": "Technology","rssUrl": "https://feeds.reuters.com/reuters/technologyNews" },
+        { "id": "reuters_sci",  "label": "Science",   "rssUrl": "https://feeds.reuters.com/reuters/scienceNews" }
+      ]
     }
   ],
   "backgrounds": [
-    {
-      "id": "bg1",
-      "file": "bg/bg1.jpeg",
-      "type": "image",
-      "label": "Background 1"
-    },
-    {
-      "id": "bg2",
-      "file": "bg/bg2.jpeg",
-      "type": "image",
-      "label": "Background 2"
-    },
-    {
-      "id": "bg3",
-      "file": "bg/bg3.mp4",
-      "type": "video",
-      "label": "Background 3"
-    }
+    { "id": "bg1", "file": "bg/bg1.jpeg", "type": "image", "label": "Background 1" },
+    { "id": "bg2", "file": "bg/bg2.jpeg", "type": "image", "label": "Background 2" },
+    { "id": "bg3", "file": "bg/bg3.mp4",  "type": "video", "label": "Background 3" }
   ]
 }

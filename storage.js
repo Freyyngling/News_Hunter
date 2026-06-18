@@ -1,5 +1,4 @@
-// storage.js - LocalStorage管理
-
+// storage.js
 const Storage = {
   PREFIX: 'freyNewsHunter_',
 
@@ -17,61 +16,40 @@ const Storage = {
     } catch { return false; }
   },
 
-  remove(key) {
-    localStorage.removeItem(this.PREFIX + key);
-  },
+  remove(key) { localStorage.removeItem(this.PREFIX + key); },
 
-  // 既読管理
+  // 既読
   getRead() { return this.get('read') || {}; },
-  markRead(articleId) {
-    const read = this.getRead();
-    read[articleId] = Date.now();
-    this.set('read', read);
+  markRead(id) {
+    const r = this.getRead(); r[id] = Date.now(); this.set('read', r);
   },
-  isRead(articleId) { return !!this.getRead()[articleId]; },
+  isRead(id) { return !!this.getRead()[id]; },
 
   // ブックマーク
   getBookmarks() { return this.get('bookmarks') || []; },
   addBookmark(article) {
     const bm = this.getBookmarks();
     if (!bm.find(a => a.id === article.id)) {
-      bm.unshift(article);
-      this.set('bookmarks', bm.slice(0, 200));
+      bm.unshift(article); this.set('bookmarks', bm.slice(0, 200));
     }
   },
-  removeBookmark(articleId) {
-    const bm = this.getBookmarks().filter(a => a.id !== articleId);
-    this.set('bookmarks', bm);
-  },
-  isBookmarked(articleId) { return !!this.getBookmarks().find(a => a.id === articleId); },
+  removeBookmark(id) { this.set('bookmarks', this.getBookmarks().filter(a => a.id !== id)); },
+  isBookmarked(id) { return !!this.getBookmarks().find(a => a.id === id); },
 
-  // キャッシュ（タブごとの取得済み記事）
-  getCached(tabId) { return this.get('cache_' + tabId) || null; },
-  setCache(tabId, data) {
-    this.set('cache_' + tabId, { data, timestamp: Date.now() });
-  },
-
-  // カスタムタブ
-  getCustomTabs() { return this.get('customTabs') || null; },
-  setCustomTabs(tabs) { this.set('customTabs', tabs); },
-
-  // RSSソース
-  getRssSources() { return this.get('rssSources') || null; },
-  setRssSources(sources) { this.set('rssSources', sources); },
+  // キャッシュ
+  getCached(key) { return this.get('cache_' + key) || null; },
+  setCache(key, data) { this.set('cache_' + key, { data, timestamp: Date.now() }); },
+  removeCache(key) { this.remove('cache_' + key); },
 
   // 設定
   getSettings() { return this.get('settings') || {}; },
   saveSetting(key, value) {
-    const s = this.getSettings();
-    s[key] = value;
-    this.set('settings', s);
+    const s = this.getSettings(); s[key] = value; this.set('settings', s);
   },
 
   // 背景
   getBgSetting() { return this.get('bgSetting') || { type: 'none', value: null, zoom: 100 }; },
-  setBgSetting(setting) { this.set('bgSetting', setting); },
-
-  // アップロード背景画像（base64）
+  setBgSetting(s) { this.set('bgSetting', s); },
   getUploadedBg() { return this.get('uploadedBg') || null; },
-  setUploadedBg(base64) { this.set('uploadedBg', base64); },
+  setUploadedBg(b64) { this.set('uploadedBg', b64); },
 };

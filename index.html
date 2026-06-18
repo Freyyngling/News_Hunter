@@ -30,72 +30,49 @@
         <button id="btn-fetch">🔄 今すぐ取得</button>
       </div>
     </div>
-    <div id="status-bar">タブを選んで取得ボタンを押してください</div>
+    <div id="status-bar">ソースを選んでカテゴリを選択してください</div>
   </header>
 
-  <div id="tab-bar-wrap">
-    <div id="tab-bar"></div>
+  <!-- グループタブ（上段） -->
+  <div id="group-tab-bar-wrap">
+    <div id="group-tab-bar"></div>
+  </div>
+
+  <!-- カテゴリサブタブ（下段） -->
+  <div id="cat-tab-bar-wrap" style="display:none;">
+    <div id="cat-tab-bar"></div>
   </div>
 
   <main id="main-content">
     <div id="articles-container">
-      <div class="no-articles">タブを選択して「今すぐ取得」を押すと記事が表示されます。</div>
+      <div class="no-articles">上のタブでソースとカテゴリを選び「今すぐ取得」を押してください</div>
     </div>
   </main>
 
 </div>
 
-<!-- ===== タブ追加モーダル ===== -->
-<div class="modal-overlay" id="modal-add-tab">
+<!-- ソースグループ追加モーダル -->
+<div class="modal-overlay" id="modal-add-group">
   <div class="modal-box">
-    <h2>📌 カスタムタブを追加</h2>
+    <h2>➕ ソースを追加</h2>
     <div class="modal-field">
-      <label>タブ名</label>
-      <input type="text" id="new-tab-name" placeholder="例：AI・人工知能">
+      <label>ソース名（例：📰 Yahoo!ニュース）</label>
+      <input type="text" id="new-group-name" placeholder="ソース名">
     </div>
-    <div class="modal-field">
-      <label>RSS URL（1行1つ、複数入力可）</label>
-      <textarea id="new-tab-rssurls" rows="4" placeholder="https://gigazine.net/news/rss_2.0/&#10;https://feeds.bbci.co.uk/news/technology/rss.xml" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);border-radius:8px;color:#e8eaf0;font-size:0.85rem;resize:vertical;font-family:inherit;"></textarea>
-    </div>
-    <div class="modal-field">
-      <label>登録済みRSSソースから選んで追加</label>
-      <div id="source-picker" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;"></div>
-    </div>
-    <div class="modal-field">
-      <label>キーワードフィルタ（任意）　スペース区切りOR検索</label>
-      <input type="text" id="new-tab-keyword" placeholder="例：AI 人工知能 機械学習">
-    </div>
+    <p style="font-size:.76rem;color:#8892a4;margin-top:8px;">追加後、設定（⚙️）からカテゴリとRSS URLを登録してください。</p>
     <div class="modal-actions">
-      <button class="btn-secondary" id="btn-cancel-tab">キャンセル</button>
-      <button class="btn-primary" id="btn-save-tab">追加する</button>
+      <button class="btn-secondary" id="btn-cancel-group">キャンセル</button>
+      <button class="btn-primary" id="btn-save-group">追加</button>
     </div>
   </div>
 </div>
 
-<!-- ===== 設定モーダル ===== -->
+<!-- 設定モーダル -->
 <div class="modal-overlay" id="modal-settings">
   <div class="modal-box wide">
-    <h2>⚙️ 設定</h2>
-
-    <!-- タブごとのRSS URL編集 -->
-    <div class="settings-section">
-      <h3>タブのRSS URL編集</h3>
-      <p class="settings-desc">各タブで使うRSSのURLを直接編集できます。1行1URLで入力し「💾 保存」を押すと即座に反映されます。</p>
-      <div id="tab-edit-list"></div>
-    </div>
-
-    <!-- RSSソース候補 -->
-    <div class="settings-section">
-      <h3>RSSソース候補一覧</h3>
-      <p class="settings-desc">カスタムタブ追加時にURLをすぐ選べるようにする候補リストです。📋でURLをコピーできます。</p>
-      <div id="rss-sources-list"></div>
-      <div class="add-source-row">
-        <input type="text" id="new-rss-name" placeholder="ソース名（例：GIGAZINE）">
-        <input type="url" id="new-rss-url" placeholder="RSSのURL">
-        <button class="btn-primary" id="btn-add-rss">追加</button>
-      </div>
-    </div>
-
+    <h2>⚙️ 設定 — ソース・カテゴリ管理</h2>
+    <p class="settings-desc">各カテゴリのRSS URLを直接編集して「💾」で保存。変更は即座に反映されます。キーワードを設定するとそのカテゴリ内でさらに絞り込めます。</p>
+    <div id="settings-group-list"></div>
     <div class="modal-actions">
       <button class="btn-secondary" id="btn-reset-defaults" style="color:#ef4444;border-color:#ef4444;">⚠️ 全設定を初期化</button>
       <button class="btn-primary" id="btn-close-settings">閉じる</button>
@@ -103,13 +80,13 @@
   </div>
 </div>
 
-<!-- ===== 背景設定モーダル ===== -->
+<!-- 背景設定モーダル -->
 <div class="modal-overlay" id="modal-bg">
   <div class="modal-box">
     <h2>🖼️ 背景設定</h2>
     <div id="bg-thumbs"></div>
     <div class="bg-upload-area">
-      <label>自分の画像をアップロード（JPEG・PNG）</label>
+      <label>画像アップロード（JPEG・PNG）</label>
       <input type="file" id="bg-upload-input" accept=".jpg,.jpeg,.png">
     </div>
     <div class="zoom-row">
